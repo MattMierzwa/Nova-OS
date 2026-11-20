@@ -5,10 +5,15 @@
 (function () {
   'use strict';
 
-  /* Trocar apenas estas duas URLs quando publicar no GitHub Releases. */
+  /* No ar: baixa da Release. Abrindo o index.html direto: baixa local. */
+  var RELEASE = 'https://github.com/MattMierzwa/Nova-OS/releases/latest/download/';
   var SITE = {
     version: '1.1.0',
     downloads: {
+      portable: RELEASE + 'NOVA.OS.exe',
+      setup: RELEASE + 'NOVA.OS.Setup.exe'
+    },
+    downloadsLocal: {
       portable: 'downloads/NOVA OS.exe',
       setup: 'downloads/NOVA OS Setup.exe'
     },
@@ -17,6 +22,10 @@
       setup: '125,2 MB'
     },
     fileNames: {
+      portable: 'NOVA.OS.exe',
+      setup: 'NOVA.OS.Setup.exe'
+    },
+    fileNamesLocal: {
       portable: 'NOVA OS.exe',
       setup: 'NOVA OS Setup.exe'
     },
@@ -26,6 +35,13 @@
     }
   };
 
+  /* file:// = abrindo do HD. Qualquer outro protocolo = site publicado. */
+  function isLocalFile() {
+    return window.location && window.location.protocol === 'file:';
+  }
+  function links() { return isLocalFile() ? SITE.downloadsLocal : SITE.downloads; }
+  function names() { return isLocalFile() ? SITE.fileNamesLocal : SITE.fileNames; }
+
   function isExternal(url) {
     return /^https?:\/\//i.test(url);
   }
@@ -33,7 +49,7 @@
   function applyDownloads() {
     document.querySelectorAll('[data-download]').forEach(function (el) {
       var key = el.getAttribute('data-download');
-      var url = SITE.downloads[key];
+      var url = links()[key];
       if (!url) return;
       el.setAttribute('href', url);
       if (isExternal(url)) {
@@ -43,7 +59,7 @@
       } else {
         el.removeAttribute('target');
         el.removeAttribute('rel');
-        el.setAttribute('download', SITE.fileNames[key] || url.split('/').pop());
+        el.setAttribute('download', names()[key] || url.split('/').pop());
       }
     });
 
@@ -53,7 +69,7 @@
     });
 
     document.querySelectorAll('[data-file]').forEach(function (el) {
-      var value = SITE.fileNames[el.getAttribute('data-file')];
+      var value = names()[el.getAttribute('data-file')];
       if (value) el.textContent = value;
     });
 
